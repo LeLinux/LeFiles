@@ -87,9 +87,9 @@ class LeFiles(QtWidgets.QMainWindow):
         self.setWindowTitle("LeFiles")
         QtGui.QIcon.setThemeName("candy-icons")
 
-        self.main_group = QtWidgets.QGroupBox()
-        self.main_group.setContentsMargins(0,0,0,0)
-        self.main_group.setStyleSheet("QGroupBox {border: 0px;}")
+        self.main_group_widget = QtWidgets.QGroupBox()
+        self.main_group_widget.setContentsMargins(0,0,0,0)
+        self.main_group_widget.setStyleSheet("QGroupBox {border: 0px;}")
 
 
         self.vbox = QtWidgets.QVBoxLayout()
@@ -97,7 +97,7 @@ class LeFiles(QtWidgets.QMainWindow):
 
         self.mygroupbox = QtWidgets.QGroupBox()
 
-        self.main_group.setLayout(self.vbox)
+        self.main_group_widget.setLayout(self.vbox)
 
         self.layout = qfw.FlowLayout(needAni=True)
 
@@ -109,6 +109,57 @@ class LeFiles(QtWidgets.QMainWindow):
         self.scroll.setWidget(self.mygroupbox)
         self.scroll.setWidgetResizable(True)
         self.scroll.setStyleSheet("QScrollArea {border: 0px;}")
+
+
+        self.home_button = QtWidgets.QToolButton(icon = QtGui.QIcon.fromTheme("user-home"))
+
+        self.desktop_button = qfw.NavigationToolButton(QtGui.QIcon.fromTheme("user-desktop-symbolic"))
+
+        self.documents_button = qfw.NavigationToolButton(QtGui.QIcon.fromTheme("folder-documents"))
+
+        self.downloads_button = qfw.NavigationToolButton(QtGui.QIcon.fromTheme("folder-download"))
+
+        self.music_button = qfw.NavigationToolButton(QtGui.QIcon.fromTheme("folder-music"))
+
+        self.pictures_button = qfw.NavigationToolButton(QtGui.QIcon.fromTheme("folder-pictures"))
+
+        self.videos_button = qfw.NavigationToolButton(QtGui.QIcon.fromTheme("folder-videos"))
+
+        self.trash_button = qfw.NavigationToolButton(QtGui.QIcon.fromTheme("user-trash-full"))
+
+
+
+
+        # self.fast_activities_list_widget = qfw.NavigationPanel()
+        # self.fast_activities_list_widget.setMenuButtonVisible(0)
+        # self.fast_activities_list_widget.setFixedWidth(40)
+        # self.fast_activities_list_widget.addWidget("Home", self.home_button, \
+        #     onClick = self.open_folder(self.layout, os.path.expanduser('~')), tooltip = "Home")
+        # self.fast_activities_list_widget.addWidget("Desktop", self.desktop_button,\
+        #     onClick = self.open_folder(self.layout, os.path.expanduser('~') + "/Desktop"), tooltip = "Desktop")
+        # self.fast_activities_list_widget.addWidget("Documents", self.documents_button, \
+        #     onClick = self.open_folder(self.layout, os.path.expanduser('~') + "/Documents"), tooltip = "Documents")
+        # self.fast_activities_list_widget.addWidget("Downloads", self.downloads_button, \
+        #     onClick = self.open_folder(self.layout, os.path.expanduser('~') + "/Downloads"), tooltip = "Downloads")
+        # self.fast_activities_list_widget.addWidget("Music", self.music_button, \
+        #     onClick = self.open_folder(self.layout, os.path.expanduser('~') + "/Music"), tooltip = "Music")
+        # self.fast_activities_list_widget.addWidget("Pictures", self.pictures_button, \
+        #     onClick = self.open_folder(self.layout, os.path.expanduser('~') + "/Pictures"), tooltip = "Pictures")
+        # self.fast_activities_list_widget.addWidget("Videos", self.videos_button, \
+        #     onClick = self.open_folder(self.layout, os.path.expanduser('~') + "/Videos"), tooltip = "Videos")
+        # self.fast_activities_list_widget.addWidget("Trash", self.trash_button, onClick = lambda:print(1), tooltip = "Trash")
+
+
+        self.active_area_group = QtWidgets.QGroupBox()
+
+        self.active_area_hbox = QtWidgets.QHBoxLayout()
+        self.active_area_hbox.setContentsMargins(0,0,0,0)
+        #self.active_area_hbox.addWidget(self.fast_activities_list_widget)
+        self.active_area_hbox.addWidget(self.scroll)
+
+        self.active_area_group.setLayout(self.active_area_hbox)
+
+
 
 
         self.back_folder_button = QtWidgets.QToolButton()
@@ -142,20 +193,18 @@ class LeFiles(QtWidgets.QMainWindow):
         self.hbox.addWidget(self.forward_folder_button)
         self.hbox.addWidget(self.input_path)
         self.hbox.addWidget(self.go_to_button)
-        #self.hbox.addWidget(self.navigationInterface)
-
 
         self.hbox_groub_box.setLayout(self.hbox)
 
 
         self.vbox.addWidget(self.hbox_groub_box)
-        self.vbox.addWidget(self.scroll)
+        self.vbox.addWidget(self.active_area_group)
 
         self.layout.setAnimation(500, QtCore.QEasingCurve.OutQuad)
 
 
         self.open_folder_func(self.layout, self.active_folder_path)
-        self.setCentralWidget(self.main_group)
+        self.setCentralWidget(self.main_group_widget)
 
         #ui = conf.UI()
         #ui.setUI()
@@ -255,6 +304,7 @@ class LeFiles(QtWidgets.QMainWindow):
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])
+
 
     qdarktheme.setup_theme()
 
