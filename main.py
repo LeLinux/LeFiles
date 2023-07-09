@@ -6,19 +6,25 @@ import qfluentwidgets  as qfw
 import os
 import magic
 import fitz
+import src.widgets as c_widgets
 
 import subprocess as sb
 
+class LeFlowLayout(qfw.FlowLayout):
+    
+    #right_clicked = QtCore.Signal()
 
-class Widget(QtWidgets.QFrame):
+    def __init__(self, parent=None, needAni=False, isTight=False):
+        super(LeFlowLayout, self).__init__(parent, needAni, isTight)
+        self.installEventFilter(self)
+        #self.widgetEvent(QtCore.QEvent())
 
-    def __init__(self, text: str, parent=None):
-        super().__init__(parent=parent)
-        self.label = QtWidgets.QLabel(text, self)
-        self.label.setAlignment(QtCore.Qt.AlignCenter)
-        self.hBoxLayout = QtWidgets.QHBoxLayout(self)
-        self.hBoxLayout.addWidget(self.label, 1, QtCore.Qt.AlignCenter)
-        self.setObjectName(text.replace(' ', '-'))
+    def eventFilter(self, obj, event):
+        print(1)
+        if event.type() == QtCore.QEvent.MouseButtonPress:
+            if event.button() != QtCore.Qt.LeftButton:
+                # self.right_clicked.emit()
+                print(1)
 
 class QDoubleButton(QtWidgets.QToolButton):
     right_clicked = QtCore.Signal()
@@ -50,8 +56,9 @@ class QDoubleButton(QtWidgets.QToolButton):
             return True
 
         elif event.type() == QtCore.QEvent.MouseButtonDblClick:
-            self.is_double = True
-            return True
+            if event.button() == QtCore.Qt.LeftButton: 
+                self.is_double = True
+                return True
 
         return False
 
@@ -99,7 +106,7 @@ class LeFiles(QtWidgets.QMainWindow):
 
         self.main_group_widget.setLayout(self.vbox)
 
-        self.layout = qfw.FlowLayout(needAni=True)
+        self.layout = LeFlowLayout(needAni=True)
 
         self.mygroupbox.setLayout(self.layout)
         self.mygroupbox.setContentsMargins(0,0,0,0)
@@ -111,50 +118,25 @@ class LeFiles(QtWidgets.QMainWindow):
         self.scroll.setStyleSheet("QScrollArea {border: 0px;}")
 
 
-        self.home_button = QtWidgets.QToolButton(icon = QtGui.QIcon.fromTheme("user-home"))
-
-        self.desktop_button = qfw.NavigationToolButton(QtGui.QIcon.fromTheme("user-desktop-symbolic"))
-
-        self.documents_button = qfw.NavigationToolButton(QtGui.QIcon.fromTheme("folder-documents"))
-
-        self.downloads_button = qfw.NavigationToolButton(QtGui.QIcon.fromTheme("folder-download"))
-
-        self.music_button = qfw.NavigationToolButton(QtGui.QIcon.fromTheme("folder-music"))
-
-        self.pictures_button = qfw.NavigationToolButton(QtGui.QIcon.fromTheme("folder-pictures"))
-
-        self.videos_button = qfw.NavigationToolButton(QtGui.QIcon.fromTheme("folder-videos"))
-
-        self.trash_button = qfw.NavigationToolButton(QtGui.QIcon.fromTheme("user-trash-full"))
-
-
-
-
-        # self.fast_activities_list_widget = qfw.NavigationPanel()
-        # self.fast_activities_list_widget.setMenuButtonVisible(0)
-        # self.fast_activities_list_widget.setFixedWidth(40)
-        # self.fast_activities_list_widget.addWidget("Home", self.home_button, \
-        #     onClick = self.open_folder(self.layout, os.path.expanduser('~')), tooltip = "Home")
-        # self.fast_activities_list_widget.addWidget("Desktop", self.desktop_button,\
-        #     onClick = self.open_folder(self.layout, os.path.expanduser('~') + "/Desktop"), tooltip = "Desktop")
-        # self.fast_activities_list_widget.addWidget("Documents", self.documents_button, \
-        #     onClick = self.open_folder(self.layout, os.path.expanduser('~') + "/Documents"), tooltip = "Documents")
-        # self.fast_activities_list_widget.addWidget("Downloads", self.downloads_button, \
-        #     onClick = self.open_folder(self.layout, os.path.expanduser('~') + "/Downloads"), tooltip = "Downloads")
-        # self.fast_activities_list_widget.addWidget("Music", self.music_button, \
-        #     onClick = self.open_folder(self.layout, os.path.expanduser('~') + "/Music"), tooltip = "Music")
-        # self.fast_activities_list_widget.addWidget("Pictures", self.pictures_button, \
-        #     onClick = self.open_folder(self.layout, os.path.expanduser('~') + "/Pictures"), tooltip = "Pictures")
-        # self.fast_activities_list_widget.addWidget("Videos", self.videos_button, \
-        #     onClick = self.open_folder(self.layout, os.path.expanduser('~') + "/Videos"), tooltip = "Videos")
-        # self.fast_activities_list_widget.addWidget("Trash", self.trash_button, onClick = lambda:print(1), tooltip = "Trash")
-
-
         self.active_area_group = QtWidgets.QGroupBox()
+
+        self.fast_activities_list_widget = c_widgets.SideBar(self, item_size = 35, item_icon_size = 35, font_size = 14, show_menu_button = 0)
+        self.fast_activities_list_widget.setMinimumWidth(35)
+        self.fast_activities_list_widget.addButton(QtGui.QIcon.fromTheme("user-home"), "test", self.open_folder(self.layout, os.path.expanduser('~')))
+        self.fast_activities_list_widget.addButton(QtGui.QIcon.fromTheme("user-desktop-symbolic"), "test", self.open_folder(self.layout, os.path.expanduser('~') + "/Desktop"))
+        self.fast_activities_list_widget.addButton(QtGui.QIcon.fromTheme("folder-documents-symbolic"), "test", self.open_folder(self.layout, os.path.expanduser('~') + "/Documents"))
+        self.fast_activities_list_widget.addButton(QtGui.QIcon.fromTheme("folder-downloads"), "test", self.open_folder(self.layout, os.path.expanduser('~') + "/Downloads"))
+        self.fast_activities_list_widget.addButton(QtGui.QIcon.fromTheme("folder-music"), "test", self.open_folder(self.layout, os.path.expanduser('~') + "/Music"))
+        self.fast_activities_list_widget.addButton(QtGui.QIcon.fromTheme("folder-pictures"), "test", self.open_folder(self.layout, os.path.expanduser('~') + "/Pictures"))
+        self.fast_activities_list_widget.addButton(QtGui.QIcon.fromTheme("folder-videos"), "test", self.open_folder(self.layout, os.path.expanduser('~') + "/Videos"))
+        self.fast_activities_list_widget.addButton(QtGui.QIcon.fromTheme("user-trash-full"), "test", None)
+
+
+        #self.active_area_group = QtWidgets.QGroupBox()
 
         self.active_area_hbox = QtWidgets.QHBoxLayout()
         self.active_area_hbox.setContentsMargins(0,0,0,0)
-        #self.active_area_hbox.addWidget(self.fast_activities_list_widget)
+        self.active_area_hbox.addWidget(self.fast_activities_list_widget)
         self.active_area_hbox.addWidget(self.scroll)
 
         self.active_area_group.setLayout(self.active_area_hbox)
@@ -200,7 +182,7 @@ class LeFiles(QtWidgets.QMainWindow):
         self.vbox.addWidget(self.hbox_groub_box)
         self.vbox.addWidget(self.active_area_group)
 
-        self.layout.setAnimation(500, QtCore.QEasingCurve.OutQuad)
+        self.layout.setAnimation(250, QtCore.QEasingCurve.OutQuad)
 
 
         self.open_folder_func(self.layout, self.active_folder_path)
@@ -301,6 +283,8 @@ class LeFiles(QtWidgets.QMainWindow):
     def open_folder(self, layout, path):
         #print(path)
         return lambda: self.open_folder_func(layout, path)
+
+    #def 
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])
