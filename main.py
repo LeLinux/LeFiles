@@ -10,21 +10,170 @@ import src.widgets as c_widgets
 
 import subprocess as sb
 
-class LeFlowLayout(qfw.FlowLayout):
-    
-    #right_clicked = QtCore.Signal()
+class NewFolderDialog(QtWidgets.QMainWindow):
+    def __init__(self, parent = None, layout = None, path = None):
+        super().__init__()
+        self.parent = parent
+        self.layout = layout
+        self.path = path
+
+        self.main_group = QtWidgets.QGroupBox(self)
+        self.main_vbox = QtWidgets.QVBoxLayout()
+        self.main_group.setLayout(self.main_vbox)
+
+        self.folder_name_line_edit = QtWidgets.QLineEdit(text = "New Folder")
+
+        self.cancel_create_group = QtWidgets.QGroupBox()
+        self.cancel_create_hbox = QtWidgets.QHBoxLayout()
+
+        self.cancel_button = QtWidgets.QPushButton(text = "Cancel")
+        self.cancel_button.clicked.connect(lambda: self.hide())
+
+        self.create_button = QtWidgets.QPushButton(text = "Create")
+        self.create_button.clicked.connect(self.CreateFolder)
+
+        self.cancel_create_hbox.addWidget(self.cancel_button)
+        self.cancel_create_hbox.addWidget(self.create_button)
+
+        self.cancel_create_group.setLayout(self.cancel_create_hbox)
+
+        self.main_vbox.addWidget(self.folder_name_line_edit)
+        self.main_vbox.addWidget(self.cancel_create_group)
+
+        self.setCentralWidget(self.main_group)
+        self.show()
+
+
+    def CreateFolder(self):
+        sb.call(["mkdir", self.path + "/" + self.folder_name_line_edit.text()])
+        self.parent.open_folder_func(self.layout, self.path[:-1])
+
+        self.hide()
+
+class RenameDialog(QtWidgets.QMainWindow):
+    def __init__(self, parent = None, layout = None, path = None, current_name = None):
+        super().__init__()
+        self.parent = parent
+        self.layout = layout
+        self.path = path
+        self.current_name = current_name
+
+        #self.path = ""
+
+        self.main_group = QtWidgets.QGroupBox(self)
+        self.main_vbox = QtWidgets.QVBoxLayout()
+        self.main_group.setLayout(self.main_vbox)
+
+        self.name_line_edit = QtWidgets.QLineEdit(text = self.current_name)
+
+        self.cancel_rename_group = QtWidgets.QGroupBox()
+        self.cancel_rename_hbox = QtWidgets.QHBoxLayout()
+
+        self.cancel_button = QtWidgets.QPushButton(text = "Cancel")
+        self.cancel_button.clicked.connect(lambda: self.hide())
+
+        self.rename_button = QtWidgets.QPushButton(text = "Rename")
+        self.rename_button.clicked.connect(self.rename)
+
+        self.cancel_rename_hbox.addWidget(self.cancel_button)
+        self.cancel_rename_hbox.addWidget(self.rename_button)
+
+        self.cancel_rename_group.setLayout(self.cancel_rename_hbox)
+
+        self.main_vbox.addWidget(self.name_line_edit)
+        self.main_vbox.addWidget(self.cancel_rename_group)
+
+        self.setCentralWidget(self.main_group)
+        self.show()
+
+    def setPath(self, path):
+        self.path = path
+
+    def rename(self):
+        print(self.path + "/" + self.current_name)
+        sb.call(["mv", self.path + "/" + self.current_name, self.path + "/" + self.name_line_edit.text()])
+        self.parent.open_folder_func(self.layout, self.path[:-1])
+
+        self.hide()
+
+class RemoveDialog(QtWidgets.QMainWindow):
+    def __init__(self, parent = None, layout = None, path = None, current_name = None):
+        super().__init__()
+        self.parent = parent
+        self.layout = layout
+        self.path = path
+        self.current_name = current_name
+
+        #self.path = ""
+
+        self.main_group = QtWidgets.QGroupBox(self)
+        self.main_vbox = QtWidgets.QVBoxLayout()
+        self.main_group.setLayout(self.main_vbox)
+
+        self.label = QtWidgets.QLabel(text = "Are you sure to remove \"" + self.current_name + "\"?\nYou can't restore file after removing.")
+
+        self.cancel_remove_group = QtWidgets.QGroupBox()
+        self.cancel_remove_hbox = QtWidgets.QHBoxLayout()
+
+        self.cancel_button = QtWidgets.QPushButton(text = "Cancel")
+        self.cancel_button.clicked.connect(lambda: self.hide())
+
+        self.remove_button = QtWidgets.QPushButton(text = "Remove")
+        self.remove_button.clicked.connect(self.remove)
+
+        self.cancel_remove_hbox.addWidget(self.cancel_button)
+        self.cancel_remove_hbox.addWidget(self.remove_button)
+
+        self.cancel_remove_group.setLayout(self.cancel_remove_hbox)
+
+        self.main_vbox.addWidget(self.label)
+        self.main_vbox.addWidget(self.cancel_remove_group)
+
+        self.setCentralWidget(self.main_group)
+        self.show()
+
+    def setPath(self, path):
+        self.path = path
+
+    def remove(self):
+        #print(self.path + "/" + self.current_name)
+        sb.call(["rm", "-r", self.path + "/" + self.current_name])
+        self.parent.open_folder_func(self.layout, self.path[:-1])
+
+        self.hide()
+
+class LeFlowWidget(QtWidgets.QWidget):
+
+    right_clicked = QtCore.Signal()
 
     def __init__(self, parent=None, needAni=False, isTight=False):
-        super(LeFlowLayout, self).__init__(parent, needAni, isTight)
+        #super(LeFlowLayout, self).__init__(parent, needAni, isTight)
+        super().__init__()
+        self.layout = qfw.FlowLayout(self, needAni = needAni, isTight = isTight)
+
         self.installEventFilter(self)
+        self.setMouseTracking(True)
+        self.x = 0
+        self.y = 0
         #self.widgetEvent(QtCore.QEvent())
 
+    def takeAllWidgets(self):
+        self.layout.takeAllWidgets()
+
+    def addWidget(self, widget):
+        self.layout.addWidget(widget)
+
     def eventFilter(self, obj, event):
-        print(1)
+        #print(333)
         if event.type() == QtCore.QEvent.MouseButtonPress:
             if event.button() != QtCore.Qt.LeftButton:
-                # self.right_clicked.emit()
-                print(1)
+                tmp = QtGui.QCursor.pos().toPointF()
+                self.x = tmp.x()
+                self.y = tmp.y()
+                self.right_clicked.emit()
+
+                return 1
+        return 0
 
 class QDoubleButton(QtWidgets.QToolButton):
     right_clicked = QtCore.Signal()
@@ -42,10 +191,21 @@ class QDoubleButton(QtWidgets.QToolButton):
         self.is_double = False
         self.is_left_click = True
 
+        self.x = 0
+        self.y = 0
+
+        self.setMouseTracking(True)
+
         self.installEventFilter(self)
 
     def eventFilter(self, obj, event):
         if event.type() == QtCore.QEvent.MouseButtonPress:
+            if event.button() != QtCore.Qt.LeftButton and event.button() != QtCore.QEvent.MouseButtonDblClick:
+                tmp = QtGui.QCursor.pos().toPointF()
+                self.x = tmp.x()
+                self.y = tmp.y()
+                self.right_clicked.emit()
+                return 1
             if not self.timer.isActive():
                 self.timer.start()
 
@@ -56,7 +216,7 @@ class QDoubleButton(QtWidgets.QToolButton):
             return True
 
         elif event.type() == QtCore.QEvent.MouseButtonDblClick:
-            if event.button() == QtCore.Qt.LeftButton: 
+            if event.button() == QtCore.Qt.LeftButton:
                 self.is_double = True
                 return True
 
@@ -72,15 +232,6 @@ class QDoubleButton(QtWidgets.QToolButton):
                 self.right_clicked.emit()
 
         self.is_double = False
-
-    def left_click_event(self):
-        print('left clicked')
-
-    def right_click_event(self):
-        print('right clicked')
-
-    def double_click_event(self):
-        print('double clicked')
 
 
 class LeFiles(QtWidgets.QMainWindow):
@@ -102,18 +253,22 @@ class LeFiles(QtWidgets.QMainWindow):
         self.vbox = QtWidgets.QVBoxLayout()
         self.vbox.setContentsMargins(0,0,0,0)
 
-        self.mygroupbox = QtWidgets.QGroupBox()
+        #self.mygroupbox = QtWidgets.QGroupBox()
+
 
         self.main_group_widget.setLayout(self.vbox)
 
-        self.layout = LeFlowLayout(needAni=True)
+        self.leflow = LeFlowWidget(needAni=True)
+        self.leflow.right_clicked.connect(self.folder_menu)
 
-        self.mygroupbox.setLayout(self.layout)
-        self.mygroupbox.setContentsMargins(0,0,0,0)
+        #self.layout = self.mygroupbox
+
+        #self.mygroupbox.setLayout(self.layout)
+        #self.mygroupbox.setContentsMargins(0,0,0,0)
 
         self.scroll = QtWidgets.QScrollArea(self)
         self.scroll.setContentsMargins(0,0,0,0)
-        self.scroll.setWidget(self.mygroupbox)
+        self.scroll.setWidget(self.leflow)
         self.scroll.setWidgetResizable(True)
         self.scroll.setStyleSheet("QScrollArea {border: 0px;}")
 
@@ -122,13 +277,13 @@ class LeFiles(QtWidgets.QMainWindow):
 
         self.fast_activities_list_widget = c_widgets.SideBar(self, item_size = 35, item_icon_size = 35, font_size = 14, show_menu_button = 0)
         self.fast_activities_list_widget.setMinimumWidth(35)
-        self.fast_activities_list_widget.addButton(QtGui.QIcon.fromTheme("user-home"), "test", self.open_folder(self.layout, os.path.expanduser('~')))
-        self.fast_activities_list_widget.addButton(QtGui.QIcon.fromTheme("user-desktop-symbolic"), "test", self.open_folder(self.layout, os.path.expanduser('~') + "/Desktop"))
-        self.fast_activities_list_widget.addButton(QtGui.QIcon.fromTheme("folder-documents-symbolic"), "test", self.open_folder(self.layout, os.path.expanduser('~') + "/Documents"))
-        self.fast_activities_list_widget.addButton(QtGui.QIcon.fromTheme("folder-downloads"), "test", self.open_folder(self.layout, os.path.expanduser('~') + "/Downloads"))
-        self.fast_activities_list_widget.addButton(QtGui.QIcon.fromTheme("folder-music"), "test", self.open_folder(self.layout, os.path.expanduser('~') + "/Music"))
-        self.fast_activities_list_widget.addButton(QtGui.QIcon.fromTheme("folder-pictures"), "test", self.open_folder(self.layout, os.path.expanduser('~') + "/Pictures"))
-        self.fast_activities_list_widget.addButton(QtGui.QIcon.fromTheme("folder-videos"), "test", self.open_folder(self.layout, os.path.expanduser('~') + "/Videos"))
+        self.fast_activities_list_widget.addButton(QtGui.QIcon.fromTheme("user-home"), "test", self.open_folder(self.leflow, os.path.expanduser('~')))
+        self.fast_activities_list_widget.addButton(QtGui.QIcon.fromTheme("user-desktop-symbolic"), "test", self.open_folder(self.leflow, os.path.expanduser('~') + "/Desktop"))
+        self.fast_activities_list_widget.addButton(QtGui.QIcon.fromTheme("folder-documents-symbolic"), "test", self.open_folder(self.leflow, os.path.expanduser('~') + "/Documents"))
+        self.fast_activities_list_widget.addButton(QtGui.QIcon.fromTheme("folder-downloads"), "test", self.open_folder(self.leflow, os.path.expanduser('~') + "/Downloads"))
+        self.fast_activities_list_widget.addButton(QtGui.QIcon.fromTheme("folder-music"), "test", self.open_folder(self.leflow, os.path.expanduser('~') + "/Music"))
+        self.fast_activities_list_widget.addButton(QtGui.QIcon.fromTheme("folder-pictures"), "test", self.open_folder(self.leflow, os.path.expanduser('~') + "/Pictures"))
+        self.fast_activities_list_widget.addButton(QtGui.QIcon.fromTheme("folder-videos"), "test", self.open_folder(self.leflow, os.path.expanduser('~') + "/Videos"))
         self.fast_activities_list_widget.addButton(QtGui.QIcon.fromTheme("user-trash-full"), "test", None)
 
 
@@ -182,10 +337,10 @@ class LeFiles(QtWidgets.QMainWindow):
         self.vbox.addWidget(self.hbox_groub_box)
         self.vbox.addWidget(self.active_area_group)
 
-        self.layout.setAnimation(250, QtCore.QEasingCurve.OutQuad)
+        #self.layout.setAnimation(250, QtCore.QEasingCurve.OutQuad)
 
 
-        self.open_folder_func(self.layout, self.active_folder_path)
+        self.open_folder_func(self.leflow, self.active_folder_path)
         self.setCentralWidget(self.main_group_widget)
 
         #ui = conf.UI()
@@ -194,16 +349,16 @@ class LeFiles(QtWidgets.QMainWindow):
     def go_to_line_folder(self):
         text = self.input_path.text()
         if(text[-1] == "/"):
-            self.open_folder_func(self.layout, text[:-1])
+            self.open_folder_func(self.leflow, text[:-1])
         else:
-            self.open_folder_func(self.layout, text)
+            self.open_folder_func(self.leflow, text)
 
     def go_to_forward_folder(self):
         print("forward")
         print(self.forward_folder_path)
         #if(self.forward_folder_path == self.active_folder_path):
             #self.forward_folder_path =
-        self.open_folder_func(self.layout, self.forward_folder_path)
+        self.open_folder_func(self.leflow, self.forward_folder_path)
 
     def go_to_back_folder_path(self):
         #print(self.active_folder_path)
@@ -212,7 +367,7 @@ class LeFiles(QtWidgets.QMainWindow):
         new_path = "/"
         for i in range(1, len(tmp) - 2):
             new_path += tmp[i] + "/"
-        self.open_folder_func(self.layout, new_path[:-1])
+        self.open_folder_func(self.leflow, new_path[:-1])
 
     def open_file(self, *args):
         return lambda: sb.call(("xdg-open", *args))
@@ -223,9 +378,10 @@ class LeFiles(QtWidgets.QMainWindow):
         self.input_path.setText(self.active_folder_path)
         print(self.active_folder_path)
         curr_files = os.listdir(self.active_folder_path)
+        curr_files.sort()
         #print(curr_files)
 
-        self.layout.takeAllWidgets()
+        layout.takeAllWidgets()
         iconProvider = QtWidgets.QFileIconProvider()
 
         filetypes2icons = {"zip" : "file-archiver",
@@ -238,6 +394,7 @@ class LeFiles(QtWidgets.QMainWindow):
                            "json" : "application-json",
                            "css" : "text-css"}
         image_types = ["png", "bmp", "jpeg", "jpg", "svg"]
+
 
         for i in curr_files:
             button = QDoubleButton(self)
@@ -255,7 +412,7 @@ class LeFiles(QtWidgets.QMainWindow):
                 if(ftype in image_types):
                     button.setIcon(QtGui.QIcon(self.active_folder_path + i))
                     flag = 0
-                elif(ftype == "application/pdf"):
+                elif(ftype == "pdf"):
                     pdffile = self.active_folder_path + i
                     doc = fitz.open(pdffile)
                     page = doc.load_page(0)  # number of page
@@ -273,18 +430,68 @@ class LeFiles(QtWidgets.QMainWindow):
             elif flag:
                 button.setIcon(QtGui.QIcon("custom_icons/question-mark.svg"))
                 button.double_clicked.connect(self.open_file(self.active_folder_path + i))
+            button.right_clicked.connect(self.file_menu_glitch(button))
             button.setIconSize(QtCore.QSize(50, 50))
             button.setFixedWidth(75)
             button.setToolButtonStyle(QtCore.Qt.ToolButtonTextUnderIcon)
-            button.setStyleSheet("QToolButton {padding-left : 5px; font-size: 16px;}")
+            button.setStyleSheet("QToolButton {padding-left : 5px; font-size: 16px; border-radius: 10px;}")
             layout.addWidget(button)
-
 
     def open_folder(self, layout, path):
         #print(path)
         return lambda: self.open_folder_func(layout, path)
 
-    #def 
+    def folder_menu(self):
+        qmenu = QtWidgets.QMenu(self)
+
+        new_folder_action = QtGui.QAction()
+        new_folder_action.setText("New Folder")
+        new_folder_action.triggered.connect(self.create_folder)
+
+
+        open_in_terminal = QtGui.QAction()
+        open_in_terminal.setText("Open in terminal")
+
+        qmenu.addAction(new_folder_action)
+        qmenu.addAction(open_in_terminal)
+
+        qmenu.move(self.leflow.x, self.leflow.y)
+        qmenu.exec()
+
+    def create_folder(self):
+        new_folder_dialog = NewFolderDialog(parent = self, layout = self.leflow, path = self.active_folder_path)
+
+    def file_menu(self, button):
+
+        #print(button.text())
+        qmenu = QtWidgets.QMenu(self)
+        # qmenu.setWindowFlags(QtCore.Qt.FramelessWindowHint)
+        # qmenu.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        # qmenu.setStyleSheet("""QMenu{radius: 10px;}""")
+
+        rename_action = QtGui.QAction()
+        rename_action.setText("Rename")
+        rename_action.triggered.connect(lambda: self.rename(button))
+
+        remove_action = QtGui.QAction()
+        remove_action.setText("Remove")
+        remove_action.triggered.connect(lambda: self.remove(button))
+
+        qmenu.addAction(rename_action)
+        qmenu.addAction(remove_action)
+
+        qmenu.move(button.x, button.y)
+        qmenu.exec()
+
+    def file_menu_glitch(self, button):
+        return lambda: self.file_menu(button)
+
+    def rename(self, button):
+        rename_dialog = RenameDialog(parent = self, layout = self.leflow, path =self.active_folder_path, current_name = button.text())
+
+    def remove(self, button):
+        remove_dialog = RemoveDialog(parent = self, layout = self.leflow, path = self.active_folder_path, current_name = button.text())
+
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])
